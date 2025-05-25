@@ -30,6 +30,5 @@ load_folder(Path('socketio_listeners'))
 if __name__ == '__main__':
     manager = UserManager()
     # manager.create_user("Vincent", "placeholder")
-    # print(manager.users['Vincent'].to_dict())
 
     core.socketio.run(core.app, host='0.0.0.0', port=5000, debug=True)

@@ -1,6 +1,5 @@
 """
 The User Manager class. Manages Users, and saves/loads data to/from the JSON.
-
 """
 # Standard Imports
 import json
@@ -104,7 +103,7 @@ default_game_stats = {
 
 class UserManager:
     """
-    Class used to handle users
+    Class used to handle users.
     """
     def __init__(self, user_data_path=core.user_data_path):
         self.user_data_path = user_data_path
@@ -158,19 +157,18 @@ class UserManager:
         """
         users = self.users.values()
 
-        # Removes games that were deleted
         for user in users:
-            for game in list(user.game_stats):
-                if game not in default_game_stats:
-                    user.game_stats.pop(game)
+            user.game_stats = {
+                game: stats for game, stats in user.game_stats.items()
+                if game in default_game_stats
+            }
 
-        # Removes stats that were deleted
-        for user in users:
-            for game, stats in default_game_stats.items():
-                if user.game_stats.get(game):
-                    for stat in list(user.game_stats.get(game)):
-                        if stat not in stats:
-                            user.game_stats.get(game).pop(stat)
+            for game in user.game_stats:
+                existing_stats = default_game_stats.get(game)
+                user.game_stats[game] = {
+                    stat: value for stat, value in user.game_stats.get(game).items()
+                    if stat in existing_stats
+                }
 
     def add_missing_data(self):
         """
@@ -178,35 +176,24 @@ class UserManager:
         """
         users = self.users.values()
 
-        # Adds missing games
         for user in users:
-            for game in default_game_stats:
-                if not user.game_stats.get(game):
-                    user.game_stats.setdefault(game, default_game_stats.get(game))
+            for game, stats in default_game_stats.items():
+                user.game_stats.setdefault(game, stats.copy())
 
-        # Adds missing game stats
-        for user in users:
-            for game in user.game_stats:
-                if default_game_stats.get(game):
-                    for stat in default_game_stats.get(game):
-                        user.game_stats.get(game).setdefault(stat, 0)
+                for stat in stats:
+                    user.game_stats[game].setdefault(stat, 0)
 
     def sort_games(self):
         """
         Alphabetically sorts the games in game_stats
         """
         users = self.users.values()
-
-        sorted_games = {}
-        alphabetical_games = default_game_stats.keys()
+        game_order = sorted(default_game_stats.keys())
 
         for user in users:
-            for game in alphabetical_games:
-                sorted_games.setdefault(game, user.game_stats.get(game))
-
-            user.game_stats.clear()
-            for game, stat in sorted_games.items():
-                user.game_stats.setdefault(game, stat)
+            user.game_stats = {
+                game: user.game_stats.get(game) for game in game_order
+            }
 
     def sort_game_stats(self):
         """
@@ -214,22 +201,8 @@ class UserManager:
         """
         users = self.users.values()
 
-
         for user in users:
-            sorted_game_stats = {}
-            
-            for game, stats in default_game_stats.items():
-                sorted_game_stats.setdefault(game, {})
-                for stat in stats:
-                    sorted_game_stats.get(game).setdefault(stat, user.game_stats.get(game).get(stat))
-
-            print(sorted_game_stats)
-            
-            
-            # print(user.game_stats.get('battleship'))
-            # user.game_stats.get('battleship').clear()
-            # print(user.game_stats.get('battleship'))
-
-            # for game in sorted_game_stats:
-            #     user.game_stats.get(game).clear()
-            #     user.game_stats.setdefault(game, sorted_game_stats.get(game))
+            for game, stat_order in default_game_stats.items():
+                user.game_stats[game] = {
+                    stat: user.game_stats[game][stat] for stat in stat_order
+                }
