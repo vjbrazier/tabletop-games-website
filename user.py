@@ -85,35 +85,10 @@ class User(UserMixin):
         """
         Returns the User as a dictionary.
         """
-        return { 
-            self.username: {
+        return {
                 'password': self.password,
                 'wins': self.wins,
                 'losses': self.losses,
                 'ratio': self.ratio,
                 'game_stats': self.game_stats
-                }
-            }
-
-# user = User('Vincent')
-# user2 = User('Lana')
-
-# print(user.to_dict())
-# user.determine_stat_changes('losses')
-# print(user.to_dict())
-# user.determine_stat_changes('losses')
-# print(user.to_dict())
-# user.determine_stat_changes('candy', 'candyland')
-# print(user.to_dict())
-# user.determine_stat_changes('wins', 'candyland')
-# print(user.to_dict())
-
-# print(user2.to_dict())
-# user2.determine_stat_changes('losses')
-# print(user2.to_dict())
-# user2.determine_stat_changes('losses')
-# print(user2.to_dict())
-# user2.determine_stat_changes('candy', 'candyland')
-# print(user2.to_dict())
-# user2.determine_stat_changes('wins', 'candyland')
-# print(user2.to_dict())
+               }

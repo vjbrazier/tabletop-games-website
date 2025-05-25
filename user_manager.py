@@ -4,15 +4,11 @@ The User Manager class. Manages Users, and saves/loads data to/from the JSON.
 """
 # Standard Imports
 import json
-import sys
-import os
 
 # Third party imports
-from flask import render_template, request, redirect,  url_for
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
+from flask_login import LoginManager
 
 # Custom imports
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from user import User
 import core
 
@@ -20,101 +16,89 @@ login_manager = LoginManager()
 login_manager.init_app(core.app)
 
 # Default statistics
-# Stats that are independent of games
-global_stats = ['wins', 'losses', 'ratio']
-
-# The default order of player traits
-player_traits_order = {'password': None,
-                       'wins': None, 
-                       'losses': None, 
-                       'ratio': None, 
-                       'game_specific': None
-                       }
-
-# Stats that are tied to specific games
 default_game_stats = {
-    "battleship": {
-        "wins": 0,
-        "losses": 0,
-        "ratio": 0,
-        "ships_sunk": 0,
-        "shots_hit": 0,
-        "shots_missed": 0,
-        "total_shots": 0,
+    'battleship': {
+        'wins': 0,
+        'losses': 0,
+        'ratio': 0,
+        'ships_sunk': 0,
+        'shots_hit': 5,
+        'shots_missed': 0,
+        'total_shots': 0,
     },
 
-    "blackjack": {
-        "wins": 0,
-        "losses": 0,
-        "ratio": 0,
-        "hits": 0,
+    'blackjack': {
+        'wins': 0,
+        'losses': 0,
+        'ratio': 0,
+        'hits': 0,
     },
 
-    "candyland": {
-        "wins": 0,
-        "losses": 0,
-        "ratio": 0,
-        "rainbow_trail": 0,
-        "gumdrop_pass": 0,
-        "gingerbread_men": 0,
-        "gumdrops": 0,
-        "candy_canes": 0,
-        "peanuts": 0,
-        "lollipops": 0,
-        "ice_cream": 0,
-        "licorice": 0,
-        "spaces_moved": 0,
+    'candyland': {
+        'wins': 0,
+        'losses': 0,
+        'ratio': 0,
+        'rainbow_trail': 0,
+        'gumdrop_pass': 0,
+        'gingerbread_men': 0,
+        'gumdrops': 0,
+        'candy_canes': 0,
+        'peanuts': 0,
+        'lollipops': 0,
+        'ice_cream': 0,
+        'licorice': 0,
+        'spaces_moved': 0,
     },
 
-    "catan": {
-        "wins": 0,
-        "losses": 0,
-        "ratio": 0,
+    'catan': {
+        'wins': 0,
+        'losses': 0,
+        'ratio': 0,
     },
 
-    "chutes_and_ladders": {
-        "wins": 0,
-        "losses": 0,
-        "ratio": 0,
-        "chutes": 0,
-        "ladders": 0,
+    'chutes_and_ladders': {
+        'wins': 0,
+        'losses': 0,
+        'ratio': 0,
+        'chutes': 0,
+        'ladders': 0,
     },
 
-    "clue": {
-        "wins": 0,
-        "losses": 0,
-        "ratio": 0,
+    'clue': {
+        'wins': 0,
+        'losses': 0,
+        'ratio': 0,
     },
 
-    "connect_four": {
-        "wins": 0,
-        "losses": 0,
-        "ratio": 0,
-        "red_pieces": 0,
-        "yellow_pieces": 0,
-        "total_pieces": 0,
+    'connect_four': {
+        'wins': 0,
+        'losses': 0,
+        'ratio': 0,
+        'red_pieces': 0,
+        'yellow_pieces': 0,
+        'total_pieces': 0,
     },
 
-    "monopoly": {
-        "wins": 0,
-        "losses": 0,
-        "ratio": 0,
+    'monopoly': {
+        'wins': 0,
+        'losses': 0,
+        'ratio': 0,
     },
 
-    "sorry": {
-        "wins": 0,
-        "losses": 0,
-        "ratio": 0,
-        "sorrys": 0,
-        "swaps": 0,
+    'sorry': {
+        'wins': 0,
+        'losses': 0,
+        'ratio': 0,
+        'sorrys': 0,
+        'swaps': 0,
     },
 
-    "uno": {
-        "wins": 0,
-        "losses": 0,
-        "ratio": 0,
-        "unos": 0,
-        "total_drawn": 0,
+    'uno': {
+        'wins': 0,
+        'losses': 0,
+        'ratio': 0,
+        'unos': 0,
+        'total_drawn': 0,
     }
 }
 
@@ -127,8 +111,10 @@ class UserManager:
         self.users = self.load_users()
 
         self.add_missing_data()
-        # self.sort_data()
-        # self.save_users()
+        self.remove_deleted_data()
+        self.sort_games()
+        self.sort_game_stats()
+        self.save_users()
 
     def load_users(self):
         """
@@ -152,24 +138,98 @@ class UserManager:
         return users
 
     def create_user(self, username, password):
+        """
+        Creates a user with the username and password given.
+        """
         self.users[username] = User(username=username, password=password)
         self.add_missing_data()
+        self.save_users()
 
     def save_users(self):
         """
         Saves users to the JSON file.
         """
         with open(self.user_data_path, 'w', encoding='utf-8') as f:
-            json.dump({user.to_dict() for user in self.users.values()}, f, indent=4)
+            json.dump({user.username: user.to_dict() for user in self.users.values()}, f, indent=4)
+
+    def remove_deleted_data(self):
+        """
+        Removes data that has been deleted.
+        """
+        users = self.users.values()
+
+        # Removes games that were deleted
+        for user in users:
+            for game in list(user.game_stats):
+                if game not in default_game_stats:
+                    user.game_stats.pop(game)
+
+        # Removes stats that were deleted
+        for user in users:
+            for game, stats in default_game_stats.items():
+                if user.game_stats.get(game):
+                    for stat in list(user.game_stats.get(game)):
+                        if stat not in stats:
+                            user.game_stats.get(game).pop(stat)
 
     def add_missing_data(self):
         """
         Adds data missing from the User.
-        Note: This is just game data, as the other data is initialized automatically.
         """
-        for user in self.users.values():
+        users = self.users.values()
+
+        # Adds missing games
+        for user in users:
             for game in default_game_stats:
                 if not user.game_stats.get(game):
                     user.game_stats.setdefault(game, default_game_stats.get(game))
 
-        self.save_users()
+        # Adds missing game stats
+        for user in users:
+            for game in user.game_stats:
+                if default_game_stats.get(game):
+                    for stat in default_game_stats.get(game):
+                        user.game_stats.get(game).setdefault(stat, 0)
+
+    def sort_games(self):
+        """
+        Alphabetically sorts the games in game_stats
+        """
+        users = self.users.values()
+
+        sorted_games = {}
+        alphabetical_games = default_game_stats.keys()
+
+        for user in users:
+            for game in alphabetical_games:
+                sorted_games.setdefault(game, user.game_stats.get(game))
+
+            user.game_stats.clear()
+            for game, stat in sorted_games.items():
+                user.game_stats.setdefault(game, stat)
+
+    def sort_game_stats(self):
+        """
+        Sorts game stats (note: sorted how I like, not alphabetical or anything)
+        """
+        users = self.users.values()
+
+
+        for user in users:
+            sorted_game_stats = {}
+            
+            for game, stats in default_game_stats.items():
+                sorted_game_stats.setdefault(game, {})
+                for stat in stats:
+                    sorted_game_stats.get(game).setdefault(stat, user.game_stats.get(game).get(stat))
+
+            print(sorted_game_stats)
+            
+            
+            # print(user.game_stats.get('battleship'))
+            # user.game_stats.get('battleship').clear()
+            # print(user.game_stats.get('battleship'))
+
+            # for game in sorted_game_stats:
+            #     user.game_stats.get(game).clear()
+            #     user.game_stats.setdefault(game, sorted_game_stats.get(game))
