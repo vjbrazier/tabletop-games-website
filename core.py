@@ -27,13 +27,13 @@ user_data_path = Path('data/users.json')
 # Creating missing folders/files
 if not os.path.exists(logs_folder_path):
     os.makedirs(logs_folder_path)
-    add_to_log('[INFO] Created log folder')
+    add_to_log('[INFO] Created log folder.')
 
 if not os.path.exists(data_folder_path):
     os.makedirs(Path('data/'))
-    add_to_log('[INFO] Created data folder')
+    add_to_log('[INFO] Created data folder.')
 
 if not os.path.exists(user_data_path):
     with open(user_data_path, 'w', encoding='utf-8') as f:
         f.write('{}')
-        add_to_log('[INFO] Created user data file')
+        add_to_log('[INFO] Created user data file.')

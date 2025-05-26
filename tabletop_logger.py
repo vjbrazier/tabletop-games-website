@@ -15,9 +15,9 @@ def get_time():
     """
     Returns the current time in the format of:
 
-    Hour:Minute:Second AM/PM: 
+    Hour:Minute:Second.Milliseconds AM/PM: 
     """
-    return datetime.now().strftime("%I:%M:%S %p")
+    return datetime.now().strftime('%I:%M:%S.%f')[:-3] + datetime.now().strftime(' %p')
 
 def add_to_log(message):
     """

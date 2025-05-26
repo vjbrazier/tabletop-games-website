@@ -20,6 +20,9 @@ class User(UserMixin):
         self.ratio = ratio
         self.game_stats = game_stats
 
+    def get_username(self):
+        return self.username
+
     def set_stat(self, stat, value=0, increment=True, game=None):
         """
         Sets a stat based on the value given. 
