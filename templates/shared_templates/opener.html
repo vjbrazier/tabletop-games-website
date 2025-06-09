@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> {{ page_title }}</title>
+
+    <!-- Reset -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shared_css/reset.css') }}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png"            href="{{ url_for('static', filename='favicon/favicon-96x96.png') }}" sizes="96x96"/>
+    <link rel="icon" type="image/svg+xml"        href="{{ url_for('static', filename='favicon/favicon.svg') }}"/>
+    <link rel="shortcut icon"                    href="{{ url_for('static', filename='favicon/favicon.ico') }}"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}"/>
+    <link rel="manifest"                         href="{{ url_for('static', filename='favicon/site.webmanifest') }}"/>
+    <meta name="apple-mobile-web-app-title" content="Tabletop"/>
+
+    <!-- Themes -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shared_css/themes.css') }}">
+
+    <!-- Shared page elements -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shared_css/page_elements.css') }}">
+
+    <!-- SocketIO client-side library -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+
+    <!-- External CSS file specific to the page -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/' + page_id + '.css') }}">
+
+    {% if page_id in games %}
+
+        <!-- Shared game elements -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/shared_css/game_elements.css') }}">
+
+    {% endif %}
+</head>
+<body id="webpage" data-theme="">
+    {% include 'shared_templates/themes.html' %}

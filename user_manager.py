@@ -16,7 +16,7 @@ default_game_stats = {
         'losses': 0,
         'ratio': 0,
         'ships_sunk': 0,
-        'shots_hit': 5,
+        'shots_hit': 0,
         'shots_missed': 0,
         'total_shots': 0,
     },
@@ -176,9 +176,9 @@ class UserManager:
                     stat: value for stat, value in user.game_stats.get(game).items()
                     if stat in existing_stats
                 }
-            
+
             add_to_log(f'[INFO] Finished removing deleted data for {user.get_username()}!')
-        
+
         add_to_log('[INFO] Finished removing deleted data for all users!')
 
     def add_missing_data(self):
